@@ -1,21 +1,32 @@
 const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
-
+app.enable('trust proxy'); // Enable if behind a proxy (e.g., Vercel)
 // Import routes
 const authRoutes = require('./routes/auth');
 const taskRoutes = require('./routes/tasks');
 
 const allowedOrigins = [
     'http://localhost:3000',
-    'https://task-manager-client.vercel.app', // Your Vercel URL
-    'https://your-backend.onrender.com'
-];
+    'https://task-manager-7nqjxk9kg-bade04s-projects.vercel.app', // Your Vercel URL
+    process.env.FRONTEND_URL // Add this line to allow the URL from .env
+].filter(Boolean);
 
 const app = express();
 
 // Middleware
-app.use(cors());
+
+app.use(cors({
+    origin: function(origin, callback) {
+        if (!origin || allowedOrigins.indexOf(origin) !== -1) {
+            callback(null, true);
+        } else {
+            callback(new Error('Not allowed by CORS'));
+        }
+    },
+    credentials: true
+}));
+
 app.use(express.json());
 
 // Routes - THIS IS THE KEY PART
