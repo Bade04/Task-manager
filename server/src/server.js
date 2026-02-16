@@ -6,6 +6,12 @@ require('dotenv').config();
 const authRoutes = require('./routes/auth');
 const taskRoutes = require('./routes/tasks');
 
+const allowedOrigins = [
+    'http://localhost:3000',
+    'https://task-manager-client.vercel.app', // Your Vercel URL
+    'https://your-backend.onrender.com'
+];
+
 const app = express();
 
 // Middleware
