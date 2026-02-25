@@ -1,0 +1,8 @@
+{
+  "projects": [
+    {
+      "name": "task-manager-client",
+      "rootDirectory": "client"
+    }
+  ]
+}

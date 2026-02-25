@@ -23,6 +23,7 @@ const allowedOrigins = [
     'http://localhost:5000',
     'https://task-manager-5rgn6kmgi-bade04s-projects.vercel.app', // Your Vercel URL
     'https://task-manager-client.vercel.app',
+    'https://task-manager-pink-zeta-21.vercel.app',
     process.env.FRONTEND_URL
 ].filter(Boolean); // Remove undefined values
 
