@@ -14,47 +14,41 @@ const app = express();
 // Trust proxy - needed for Render
 app.enable('trust proxy');
 
-// ==================== COMPREHENSIVE CORS FIX ====================
-// This is the most important part for fixing your login issues
+// ==================== CORS FIX ====================
+const cors = require('cors');
 
-// Get allowed origins from environment or use defaults
+// Get allowed origins - add your new Vercel URL
 const allowedOrigins = [
     'http://localhost:3000',
-    'http://localhost:5000',
-    'https://task-manager-5rgn6kmgi-bade04s-projects.vercel.app', // Your Vercel URL
-    'https://task-manager-client.vercel.app',
-    'https://task-manager-pink-zeta-21.vercel.app',
+    'https://task-manager-761y.vercel.app', // YOUR NEW URL
+    'https://task-manager-pink-zeta-21.vercel.app', // Keep old ones
+    'https://task-manager-5rgn6kmgi-bade04s-projects.vercel.app',
     process.env.FRONTEND_URL
-].filter(Boolean); // Remove undefined values
+].filter(Boolean);
 
 console.log('✅ CORS allowed origins:', allowedOrigins);
 
-// CORS options
+// IMPORTANT: Do NOT use '*' with credentials: true
 const corsOptions = {
     origin: function (origin, callback) {
-        // Allow requests with no origin (like mobile apps, curl, Postman)
-        if (!origin) {
-            return callback(null, true);
-        }
+        // Allow requests with no origin (like mobile apps, curl)
+        if (!origin) return callback(null, true);
         
-        // Allow if origin is in allowed list OR if it's any Vercel preview URL
-        if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('.vercel.app')) {
-            callback(null, true);
+        // Allow if origin is in allowed list OR any Vercel preview URL
+        if (allowedOrigins.includes(origin) || origin.includes('.vercel.app')) {
+            callback(null, origin); // Return the specific origin, not '*'
         } else {
             console.log('❌ Blocked origin:', origin);
             callback(new Error('CORS not allowed'));
         }
     },
-    credentials: true, // Allow cookies/auth headers
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'Origin', 'X-Requested-With', 'Accept'],
-    optionsSuccessStatus: 200 // Some legacy browsers choke on 204
+    credentials: true, // This requires specific origin, not '*'
+    optionsSuccessStatus: 200
 };
 
-// Apply CORS middleware
 app.use(cors(corsOptions));
 
-// Handle preflight requests explicitly
+// Handle preflight explicitly
 app.options('*', cors(corsOptions));
 
 // Additional headers middleware as backup
