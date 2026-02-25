@@ -1,7 +1,7 @@
 // server/src/server.js
 
 const express = require('express');
-const cors = require('cors');
+const cors = require('cors'); // <-- ONLY DECLARE THIS ONCE!
 require('dotenv').config();
 
 // Import routes
@@ -14,14 +14,12 @@ const app = express();
 // Trust proxy - needed for Render
 app.enable('trust proxy');
 
-// ==================== CORS FIX ====================
-const cors = require('cors');
 
-// Get allowed origins - add your new Vercel URL
 const allowedOrigins = [
     'http://localhost:3000',
-    'https://task-manager-761y.vercel.app', // YOUR NEW URL
-    'https://task-manager-pink-zeta-21.vercel.app', // Keep old ones
+    'http://localhost:5000',
+    'https://task-manager-761y.vercel.app', // Your current URL
+    'https://task-manager-pink-zeta-21.vercel.app',
     'https://task-manager-5rgn6kmgi-bade04s-projects.vercel.app',
     process.env.FRONTEND_URL
 ].filter(Boolean);
@@ -46,27 +44,11 @@ const corsOptions = {
     optionsSuccessStatus: 200
 };
 
+// Apply CORS middleware
 app.use(cors(corsOptions));
 
 // Handle preflight explicitly
 app.options('*', cors(corsOptions));
-
-// Additional headers middleware as backup
-app.use((req, res, next) => {
-    const origin = req.headers.origin;
-    if (origin && (allowedOrigins.includes(origin) || origin.includes('.vercel.app'))) {
-        res.header('Access-Control-Allow-Origin', origin);
-    }
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-auth-token, Origin, X-Requested-With, Accept');
-    
-    // Handle preflight
-    if (req.method === 'OPTIONS') {
-        return res.sendStatus(200);
-    }
-    next();
-});
 
 // ==================== MIDDLEWARE ====================
 app.use(express.json());
