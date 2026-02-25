@@ -14,41 +14,66 @@ const app = express();
 // Trust proxy - needed for Render
 app.enable('trust proxy');
 
-
+// ==================== COMPREHENSIVE CORS FIX ====================
+// This is the most important part for fixing your login issues
 
 // Get allowed origins from environment or use defaults
 const allowedOrigins = [
     'http://localhost:3000',
-    'https://task-manager-client.vercel.app', // REPLACE with your actual Vercel URL
+    'http://localhost:5000',
+    'https://task-manager-5rgn6kmgi-bade04s-projects.vercel.app', // Your Vercel URL
+    'https://task-manager-client.vercel.app',
     process.env.FRONTEND_URL
 ].filter(Boolean); // Remove undefined values
 
 console.log('✅ CORS allowed origins:', allowedOrigins);
 
-// CORS middleware - must come BEFORE routes
-app.use(cors({
+// CORS options
+const corsOptions = {
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps, curl, Postman)
-        if (!origin) return callback(null, true);
+        if (!origin) {
+            return callback(null, true);
+        }
         
-        // Check if origin is allowed
-        if (allowedOrigins.indexOf(origin) !== -1) {
+        // Allow if origin is in allowed list OR if it's any Vercel preview URL
+        if (allowedOrigins.indexOf(origin) !== -1 || origin.includes('.vercel.app')) {
             callback(null, true);
         } else {
             console.log('❌ Blocked origin:', origin);
-            callback(new Error('Not allowed by CORS'));
+            callback(new Error('CORS not allowed'));
         }
     },
     credentials: true, // Allow cookies/auth headers
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'Origin', 'X-Requested-With', 'Accept'],
     optionsSuccessStatus: 200 // Some legacy browsers choke on 204
-}));
+};
+
+// Apply CORS middleware
+app.use(cors(corsOptions));
 
 // Handle preflight requests explicitly
-app.options('*', cors());
+app.options('*', cors(corsOptions));
 
+// Additional headers middleware as backup
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin && (allowedOrigins.includes(origin) || origin.includes('.vercel.app'))) {
+        res.header('Access-Control-Allow-Origin', origin);
+    }
+    res.header('Access-Control-Allow-Credentials', 'true');
+    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-auth-token, Origin, X-Requested-With, Accept');
+    
+    // Handle preflight
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
 
+// ==================== MIDDLEWARE ====================
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -60,6 +85,7 @@ app.use((req, res, next) => {
     next();
 });
 
+// ==================== ROUTES ====================
 // Health check route
 app.get('/', (req, res) => {
     res.json({
@@ -70,7 +96,8 @@ app.get('/', (req, res) => {
             register: 'POST /api/auth/register',
             login: 'POST /api/auth/login',
             tasks: 'GET /api/tasks (protected)',
-            test: 'GET /api/test'
+            test: 'GET /api/test',
+            corsTest: 'GET /api/cors-test'
         }
     });
 });
@@ -92,6 +119,16 @@ app.get('/test-db', async (req, res) => {
             details: error.message
         });
     }
+});
+
+// CORS test route
+app.get('/api/cors-test', (req, res) => {
+    res.json({
+        message: 'CORS is working!',
+        origin: req.headers.origin,
+        method: req.method,
+        headers: req.headers
+    });
 });
 
 // Test API route
@@ -118,6 +155,7 @@ app.use('*', (req, res) => {
             root: 'GET /',
             testDb: 'GET /test-db',
             testApi: 'GET /api/test',
+            corsTest: 'GET /api/cors-test',
             register: 'POST /api/auth/register',
             login: 'POST /api/auth/login',
             tasks: 'GET /api/tasks (protected)'
@@ -134,13 +172,15 @@ app.use((err, req, res, next) => {
     });
 });
 
+// ==================== START SERVER ====================
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
     console.log(`\n🚀 ==================================`);
     console.log(`✅ Server is running on port ${PORT}`);
     console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🌍 Frontend URL: ${process.env.FRONTEND_URL || 'Not set'}`);
-    console.log(`🔗 Test API at: http://localhost:${PORT}/api/test`);
-    console.log(`📊 Test DB at: http://localhost:${PORT}/test-db`);
+    console.log(`🔗 Test API at: https://task-manager-api.onrender.com/api/test`);
+    console.log(`📊 Test DB at: https://task-manager-api.onrender.com/test-db`);
+    console.log(`🌐 CORS Test at: https://task-manager-api.onrender.com/api/cors-test`);
     console.log(`=====================================\n`);
 });

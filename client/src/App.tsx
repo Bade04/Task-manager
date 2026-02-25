@@ -1,10 +1,10 @@
 // src/App.tsx
 import React from "react";
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import { AuthProvider, useAuth } from "./context/AuthContext.tsx";
-import Login from "./component/auth/login.tsx";
-import Register from "./component/auth/register.tsx";
-import Dashboard from "./component/dashboard.tsx";
+import { AuthProvider, useAuth } from "./context/AuthContext";
+import Login from "./component/auth/login";
+import Register from "./component/auth/register";
+import Dashboard from "./component/dashboard";
 
 const PrivateRoute: React.FC<{ children: React.ReactNode }> = ({
   children,

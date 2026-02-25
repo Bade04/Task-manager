@@ -1,7 +1,7 @@
 // src/component/auth/Login.tsx
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext.tsx";
+import { useAuth } from "../../context/AuthContext";
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState("");
