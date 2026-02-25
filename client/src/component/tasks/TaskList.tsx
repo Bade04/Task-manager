@@ -1,9 +1,9 @@
 // src/component/tasks/TaskList.tsx
 import React, { useState, useEffect } from "react";
 import { Task, TaskFormData, TaskUpdateData } from "../../types";
-import * as api from "../../services/api.ts";
-import TaskItem from "./TaskItem.tsx";
-import TaskForm from "./TaskForm.tsx";
+import * as api from "../../services/api";
+import TaskItem from "./TaskItem";
+import TaskForm from "./TaskForm";
 
 interface TaskListProps {
   onTaskUpdate?: () => void;

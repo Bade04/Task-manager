@@ -1,7 +1,7 @@
 // src/component/layout/Navbar.tsx
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../../context/AuthContext.tsx";
+import { useAuth } from "../../context/AuthContext";
 
 const Navbar: React.FC = () => {
   const { user, logout } = useAuth();

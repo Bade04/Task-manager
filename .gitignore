@@ -1,2 +1,4 @@
 # Node.js / npm
 node_modules/
+.vercel
+.env*.local

@@ -1,9 +1,9 @@
 // src/component/Dashboard.tsx
 import React, { useState, useEffect } from "react";
-import { useAuth } from "../context/AuthContext.tsx";
-import TaskList from "./tasks/TaskList.tsx";
-import Navbar from "./layout/Navbar.tsx";
-import * as api from "../services/api.ts";
+import { useAuth } from "../context/AuthContext";
+import TaskList from "./tasks/TaskList";
+import Navbar from "./layout/Navbar";
+import * as api from "../services/api";
 import { Task } from "../types";
 
 const Dashboard: React.FC = () => {
