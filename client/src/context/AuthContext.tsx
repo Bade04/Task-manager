@@ -52,7 +52,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const login = async (data: LoginData) => {
     try {
       setError(null);
-      const response = await api.login(data);
+      const response = await api.loginUser(data);
       localStorage.setItem("token", response.data.token);
       setUser(response.data.user);
     } catch (err: any) {
@@ -67,7 +67,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const register = async (data: RegisterData) => {
     try {
       setError(null);
-      const response = await api.register(data);
+      const response = await api.registerUser(data);
       localStorage.setItem("token", response.data.token);
       setUser(response.data.user);
     } catch (err: any) {
