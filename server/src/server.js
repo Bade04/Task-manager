@@ -10,6 +10,12 @@ const taskRoutes = require('./routes/tasks');
 const app = express();  // <-- This MUST come before any app.use() or app.enable()
 
 
+// For development/testing - allow all origins
+app.use(cors({
+    origin: '*',  // TEMPORARY - change back later
+    credentials: true
+}));
+
 app.enable('trust proxy');
 
 // Middleware
