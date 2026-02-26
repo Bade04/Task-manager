@@ -2,17 +2,17 @@ const { Pool } = require('pg');
 require('dotenv').config();
 
 console.log('🔌 Database Configuration:');
-console.log('- Host:', process.env.DB_HOST);
-console.log('- Database:', process.env.DB_DATABASE);
-console.log('- User:', process.env.DB_USER);
-console.log('- Port:', process.env.DB_PORT);
+console.log('- Host:', process.env.db_host);
+console.log('- Database:', process.env.db_database);
+console.log('- User:', process.env.db_user);
+console.log('- Port:', process.env.db_port);
 
 const poolConfig = {
-    user: process.env.DB_USER,
-    password: process.env.DB_PASSWORD,
-    host: process.env.DB_HOST,
-    port: parseInt(process.env.DB_PORT || '5432'),
-    database: process.env.DB_DATABASE,
+    user: process.env.db_user,
+    password: process.env.db_password,
+    host: process.env.db_host,
+    port: parseInt(process.env.db_port || '5432'),
+    database: process.env.db_database,
     ssl: {
         rejectUnauthorized: false  // Required for Render external connections
     },

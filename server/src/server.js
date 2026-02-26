@@ -90,8 +90,8 @@ app.get('/', (req, res) => {
         status: 'healthy',
         message: 'Task Manager API is running!',
         timestamp: new Date().toISOString(),
-        environment: process.env.NODE_ENV,
-        database: process.env.DB_DATABASE,
+        environment: process.env.node_env,
+        database: process.env.db_database,
         endpoints: {
             register: 'POST /api/auth/register',
             login: 'POST /api/auth/login',
@@ -113,7 +113,7 @@ app.get('/test-db', async (req, res) => {
             success: true,
             message: 'Database connected successfully!',
             time: result.rows[0],
-            database: process.env.DB_DATABASE
+            database: process.env.db_database
         });
     } catch (error) {
         console.error('❌ Database connection error:', {
@@ -146,7 +146,7 @@ app.get('/api/test', (req, res) => {
         message: 'API is working!',
         method: req.method,
         url: req.url,
-        environment: process.env.NODE_ENV
+        environment: process.env.node_env
     });
 });
 
@@ -177,12 +177,12 @@ app.use((err, req, res, next) => {
     console.error('❌ Unhandled error:', err.stack);
     res.status(err.status || 500).json({
         error: err.message || 'Internal server error',
-        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        stack: process.env.node_env === 'development' ? err.stack : undefined
     });
 });
 
 // ==================== START SERVER ====================
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.port || 5000;
 
 // Test database connection on startup
 async function testDatabaseConnection() {
