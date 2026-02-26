@@ -86,12 +86,14 @@ app.use((req, res, next) => {
 // ==================== ROUTES ====================
 // Health check route
 app.get('/', (req, res) => {
+    const dbDatabase = process.env.db_database || process.env.DB_DATABASE;
+
     res.json({
         status: 'healthy',
         message: 'Task Manager API is running!',
         timestamp: new Date().toISOString(),
         environment: process.env.node_env,
-        database: process.env.db_database,
+        database: dbDatabase,
         endpoints: {
             register: 'POST /api/auth/register',
             login: 'POST /api/auth/login',
@@ -109,11 +111,12 @@ app.get('/test-db', async (req, res) => {
         console.log('📊 Testing database connection...');
         const result = await pool.query('SELECT NOW() as time');
         console.log('✅ Database query successful:', result.rows[0]);
+        const dbDatabase = process.env.db_database || process.env.DB_DATABASE;
         res.json({
             success: true,
             message: 'Database connected successfully!',
             time: result.rows[0],
-            database: process.env.db_database
+            database: dbDatabase
         });
     } catch (error) {
         console.error('❌ Database connection error:', {

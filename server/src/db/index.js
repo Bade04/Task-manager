@@ -1,18 +1,25 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
+// Support both lowercase (db_*) and uppercase (DB_*) env var names
+const dbHost = process.env.db_host || process.env.DB_HOST;
+const dbDatabase = process.env.db_database || process.env.DB_DATABASE;
+const dbUser = process.env.db_user || process.env.DB_USER;
+const dbPort = process.env.db_port || process.env.DB_PORT;
+const dbPassword = process.env.db_password || process.env.DB_PASSWORD;
+
 console.log('🔌 Database Configuration:');
-console.log('- Host:', process.env.db_host);
-console.log('- Database:', process.env.db_database);
-console.log('- User:', process.env.db_user);
-console.log('- Port:', process.env.db_port);
+console.log('- Host:', dbHost);
+console.log('- Database:', dbDatabase);
+console.log('- User:', dbUser);
+console.log('- Port:', dbPort);
 
 const poolConfig = {
-    user: process.env.db_user,
-    password: process.env.db_password,
-    host: process.env.db_host,
-    port: parseInt(process.env.db_port || '5432'),
-    database: process.env.db_database,
+    user: dbUser,
+    password: dbPassword,
+    host: dbHost,
+    port: parseInt(dbPort || '5432'),
+    database: dbDatabase,
     ssl: {
         rejectUnauthorized: false  // Required for Render external connections
     },
