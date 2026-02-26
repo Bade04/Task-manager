@@ -208,8 +208,8 @@ testDatabaseConnection().then((dbConnected) => {
         console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
         console.log(`💾 Database: ${dbConnected ? '✅ Connected' : '❌ Not Connected'}`);
         console.log(`🌍 Frontend URL: ${process.env.FRONTEND_URL || 'Not set'}`);
-        console.log(`🌐 CORS Test at: https://task-manager-api.onrender.com/api/cors-test`);
-        console.log(`📊 Test DB at: https://task-manager-api.onrender.com/test-db`);
+        console.log(`🌐 CORS Test at: /api/cors-test`);
+        console.log(`📊 Test DB at: /test-db`);
         console.log(`=====================================\n`);
     });
 });
