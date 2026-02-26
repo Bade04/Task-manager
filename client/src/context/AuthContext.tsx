@@ -1,14 +1,25 @@
-// src/context/AuthContext.tsx
+// client/src/context/AuthContext.tsx
+
 import React, { createContext, useState, useContext, useEffect } from "react";
-import { User, LoginData, RegisterData } from "../types";
+import { useNavigate } from "react-router-dom";
 import * as api from "../services/api";
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+}
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   error: string | null;
-  login: (data: LoginData) => Promise<void>;
-  register: (data: RegisterData) => Promise<void>;
+  login: (data: { email: string; password: string }) => Promise<void>;
+  register: (data: {
+    name: string;
+    email: string;
+    password: string;
+  }) => Promise<void>;
   logout: () => void;
   clearError: () => void;
 }
@@ -29,6 +40,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -49,38 +61,46 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }, []);
 
-  const login = async (data: LoginData) => {
+  const login = async (data: { email: string; password: string }) => {
     try {
       setError(null);
+      console.log("🔐 Login attempt for:", data.email);
       const response = await api.loginUser(data);
+      console.log("✅ Login successful:", response.data);
       localStorage.setItem("token", response.data.token);
       setUser(response.data.user);
+      navigate("/dashboard");
     } catch (err: any) {
-      const message =
-        err.response?.data?.error ||
-        "Login failed. Please check your credentials.";
+      console.error("❌ Login error:", err);
+      const message = err.response?.data?.error || "Login failed";
       setError(message);
-      throw err;
     }
   };
 
-  const register = async (data: RegisterData) => {
+  const register = async (data: {
+    name: string;
+    email: string;
+    password: string;
+  }) => {
     try {
       setError(null);
+      console.log("🔐 Register attempt for:", data.email);
       const response = await api.registerUser(data);
+      console.log("✅ Registration successful:", response.data);
       localStorage.setItem("token", response.data.token);
       setUser(response.data.user);
+      navigate("/dashboard");
     } catch (err: any) {
-      const message =
-        err.response?.data?.error || "Registration failed. Please try again.";
+      console.error("❌ Register error:", err);
+      const message = err.response?.data?.error || "Registration failed";
       setError(message);
-      throw err;
     }
   };
 
   const logout = () => {
     localStorage.removeItem("token");
     setUser(null);
+    navigate("/login");
   };
 
   const clearError = () => {
