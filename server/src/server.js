@@ -182,7 +182,7 @@ app.use((err, req, res, next) => {
 });
 
 // ==================== START SERVER ====================
-const PORT = process.env.port || 5000;
+const PORT = process.env.PORT || 5000;
 
 // Test database connection on startup
 async function testDatabaseConnection() {
