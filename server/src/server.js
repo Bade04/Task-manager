@@ -4,6 +4,16 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
+
+// Add this near the top after your requires
+console.log('🚀 Server starting with environment:');
+console.log('- NODE_ENV:', process.env.NODE_ENV);
+console.log('- DB_HOST:', process.env.DB_HOST);
+console.log('- DB_DATABASE:', process.env.DB_DATABASE);
+console.log('- DB_USER:', process.env.DB_USER);
+console.log('- DB_PORT:', process.env.DB_PORT);
+console.log('- DB_PASSWORD set:', !!process.env.DB_PASSWORD);
+
 // Import routes
 const authRoutes = require('./routes/auth');
 const taskRoutes = require('./routes/tasks');
@@ -13,6 +23,7 @@ const app = express();
 
 // Trust proxy - needed for Render
 app.enable('trust proxy');
+
 
 // ==================== COMPLETE CORS FIX ====================
 // Get allowed origins from environment

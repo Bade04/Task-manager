@@ -31,6 +31,9 @@ const pool = new Pool(poolConfig);
 pool.connect((err, client, release) => {
     if (err) {
         console.error('❌ Database connection error:', err.message);
+        console.error('- Error code:', err.code);
+        console.error('- Error message:', err.message);
+        console.error('- Stack:', err.stack);
         return;
     }
     console.log('✅ Connected to PostgreSQL database');
