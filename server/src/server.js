@@ -1,7 +1,7 @@
 // server/src/server.js
 
 const express = require('express');
-const cors = require('cors'); // <-- ONLY DECLARE THIS ONCE!
+const cors = require('cors');
 require('dotenv').config();
 
 // Import routes
@@ -14,11 +14,12 @@ const app = express();
 // Trust proxy - needed for Render
 app.enable('trust proxy');
 
-
+// ==================== COMPLETE CORS FIX ====================
+// Get allowed origins from environment
 const allowedOrigins = [
     'http://localhost:3000',
     'http://localhost:5000',
-    'https://task-manager-761y.vercel.app', // Your current URL
+    'https://task-manager-761y.vercel.app',
     'https://task-manager-pink-zeta-21.vercel.app',
     'https://task-manager-5rgn6kmgi-bade04s-projects.vercel.app',
     process.env.FRONTEND_URL
@@ -26,7 +27,7 @@ const allowedOrigins = [
 
 console.log('✅ CORS allowed origins:', allowedOrigins);
 
-// IMPORTANT: Do NOT use '*' with credentials: true
+// CORS options
 const corsOptions = {
     origin: function (origin, callback) {
         // Allow requests with no origin (like mobile apps, curl)
@@ -34,21 +35,40 @@ const corsOptions = {
         
         // Allow if origin is in allowed list OR any Vercel preview URL
         if (allowedOrigins.includes(origin) || origin.includes('.vercel.app')) {
-            callback(null, origin); // Return the specific origin, not '*'
+            callback(null, origin);
         } else {
             console.log('❌ Blocked origin:', origin);
             callback(new Error('CORS not allowed'));
         }
     },
-    credentials: true, // This requires specific origin, not '*'
+    credentials: true,
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'x-auth-token', 'Origin', 'X-Requested-With', 'Accept'],
     optionsSuccessStatus: 200
 };
 
 // Apply CORS middleware
 app.use(cors(corsOptions));
 
-// Handle preflight explicitly
+// Handle preflight requests explicitly
 app.options('*', cors(corsOptions));
+
+// Additional headers middleware
+app.use((req, res, next) => {
+    const origin = req.headers.origin;
+    if (origin && (allowedOrigins.includes(origin) || origin.includes('.vercel.app'))) {
+        res.header('Access-Control-Allow-Origin', origin);
+        res.header('Access-Control-Allow-Credentials', 'true');
+        res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS');
+        res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-auth-token, Origin, X-Requested-With, Accept');
+    }
+    
+    // Handle preflight
+    if (req.method === 'OPTIONS') {
+        return res.sendStatus(200);
+    }
+    next();
+});
 
 // ==================== MIDDLEWARE ====================
 app.use(express.json());
@@ -58,7 +78,6 @@ app.use(express.urlencoded({ extended: true }));
 app.use((req, res, next) => {
     console.log(`\n📥 ${new Date().toISOString()} - ${req.method} ${req.url}`);
     console.log('Origin:', req.headers.origin);
-    console.log('Headers:', JSON.stringify(req.headers, null, 2));
     next();
 });
 
@@ -113,8 +132,7 @@ app.get('/api/test', (req, res) => {
     res.json({
         message: 'API is working!',
         method: req.method,
-        url: req.url,
-        headers: req.headers
+        url: req.url
     });
 });
 
@@ -122,21 +140,12 @@ app.get('/api/test', (req, res) => {
 app.use('/api/auth', authRoutes);
 app.use('/api/tasks', taskRoutes);
 
-// 404 handler for undefined routes
+// 404 handler
 app.use('*', (req, res) => {
     console.log('❌ 404 Not Found:', req.method, req.originalUrl);
     res.status(404).json({
         error: 'Route not found',
-        message: `Cannot ${req.method} ${req.originalUrl}`,
-        availableEndpoints: {
-            root: 'GET /',
-            testDb: 'GET /test-db',
-            testApi: 'GET /api/test',
-            corsTest: 'GET /api/cors-test',
-            register: 'POST /api/auth/register',
-            login: 'POST /api/auth/login',
-            tasks: 'GET /api/tasks (protected)'
-        }
+        message: `Cannot ${req.method} ${req.originalUrl}`
     });
 });
 
@@ -144,8 +153,7 @@ app.use('*', (req, res) => {
 app.use((err, req, res, next) => {
     console.error('❌ Error:', err.stack);
     res.status(err.status || 500).json({
-        error: err.message || 'Internal server error',
-        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+        error: err.message || 'Internal server error'
     });
 });
 
@@ -156,8 +164,6 @@ app.listen(PORT, () => {
     console.log(`✅ Server is running on port ${PORT}`);
     console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
     console.log(`🌍 Frontend URL: ${process.env.FRONTEND_URL || 'Not set'}`);
-    console.log(`🔗 Test API at: https://task-manager-api.onrender.com/api/test`);
-    console.log(`📊 Test DB at: https://task-manager-api.onrender.com/test-db`);
     console.log(`🌐 CORS Test at: https://task-manager-api.onrender.com/api/cors-test`);
     console.log(`=====================================\n`);
 });
