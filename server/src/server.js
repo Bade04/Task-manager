@@ -23,7 +23,7 @@ const allowedOrigins = [
     'https://task-manager-761y.vercel.app',
     'https://task-manager-pink-zeta-21.vercel.app',
     'https://task-manager-5rgn6kmgi-bade04s-projects.vercel.app',
-    'https://task-manager-ivafn6h4z-bade04s-projects.vercel.app',
+    'https://task-manager-ivafn4h6z-bade04s-projects.vercel.app',
     process.env.FRONTEND_URL
 ].filter(Boolean);
 
