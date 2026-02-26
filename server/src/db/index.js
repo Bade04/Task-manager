@@ -1,5 +1,3 @@
-// server/src/db/index.js
-
 const { Pool } = require('pg');
 require('dotenv').config();
 
@@ -8,7 +6,6 @@ console.log('- Host:', process.env.DB_HOST);
 console.log('- Database:', process.env.DB_DATABASE);
 console.log('- User:', process.env.DB_USER);
 console.log('- Port:', process.env.DB_PORT);
-console.log('- SSL:', process.env.NODE_ENV === 'production' ? 'Enabled' : 'Disabled');
 
 const poolConfig = {
     user: process.env.DB_USER,
@@ -16,28 +13,31 @@ const poolConfig = {
     host: process.env.DB_HOST,
     port: parseInt(process.env.DB_PORT || '5432'),
     database: process.env.DB_DATABASE,
+    ssl: {
+        rejectUnauthorized: false  // Required for Render external connections
+    },
+    // Add connection timeout and retry logic
+    connectionTimeoutMillis: 5000,
+    idleTimeoutMillis: 30000,
+    max: 10 // Maximum number of clients in the pool
 };
 
-// Add SSL for production (Render requires this)
-if (process.env.NODE_ENV === 'production') {
-    poolConfig.ssl = {
-        rejectUnauthorized: false
-    };
-}
+console.log('📊 Connecting with SSL enabled');
 
 const pool = new Pool(poolConfig);
 
-// Test connection
-pool.connect((err, client, release) => {
+// Test the connection with a simple query
+pool.query('SELECT NOW()', (err, res) => {
     if (err) {
-        console.error('❌ Database connection error:', err.message);
-        console.error('- Error code:', err.code);
-        console.error('- Error message:', err.message);
-        console.error('- Stack:', err.stack);
-        return;
+        console.error('❌ Database connection failed:', err.message);
+    } else {
+        console.log('✅ Database connected successfully at:', res.rows[0].now);
     }
-    console.log('✅ Connected to PostgreSQL database');
-    release();
+});
+
+// Handle pool errors
+pool.on('error', (err) => {
+    console.error('❌ Unexpected database pool error:', err);
 });
 
 module.exports = pool;

@@ -4,19 +4,10 @@ const express = require('express');
 const cors = require('cors');
 require('dotenv').config();
 
-
-// Add this near the top after your requires
-console.log('🚀 Server starting with environment:');
-console.log('- NODE_ENV:', process.env.NODE_ENV);
-console.log('- DB_HOST:', process.env.DB_HOST);
-console.log('- DB_DATABASE:', process.env.DB_DATABASE);
-console.log('- DB_USER:', process.env.DB_USER);
-console.log('- DB_PORT:', process.env.DB_PORT);
-console.log('- DB_PASSWORD set:', !!process.env.DB_PASSWORD);
-
 // Import routes
 const authRoutes = require('./routes/auth');
 const taskRoutes = require('./routes/tasks');
+const pool = require('./db'); // Import database connection
 
 // Initialize app
 const app = express();
@@ -24,8 +15,7 @@ const app = express();
 // Trust proxy - needed for Render
 app.enable('trust proxy');
 
-
-// ==================== COMPLETE CORS FIX ====================
+// ==================== COMPREHENSIVE CORS FIX ====================
 // Get allowed origins from environment
 const allowedOrigins = [
     'http://localhost:3000',
@@ -33,6 +23,7 @@ const allowedOrigins = [
     'https://task-manager-761y.vercel.app',
     'https://task-manager-pink-zeta-21.vercel.app',
     'https://task-manager-5rgn6kmgi-bade04s-projects.vercel.app',
+    'https://task-manager-ivafn6h4z-bade04s-projects.vercel.app',
     process.env.FRONTEND_URL
 ].filter(Boolean);
 
@@ -99,11 +90,14 @@ app.get('/', (req, res) => {
         status: 'healthy',
         message: 'Task Manager API is running!',
         timestamp: new Date().toISOString(),
+        environment: process.env.NODE_ENV,
+        database: process.env.DB_DATABASE,
         endpoints: {
             register: 'POST /api/auth/register',
             login: 'POST /api/auth/login',
             tasks: 'GET /api/tasks (protected)',
-            test: 'GET /api/test',
+            testDb: 'GET /test-db',
+            testApi: 'GET /api/test',
             corsTest: 'GET /api/cors-test'
         }
     });
@@ -112,18 +106,26 @@ app.get('/', (req, res) => {
 // Test database connection route
 app.get('/test-db', async (req, res) => {
     try {
-        const pool = require('./db');
-        const result = await pool.query('SELECT NOW()');
+        console.log('📊 Testing database connection...');
+        const result = await pool.query('SELECT NOW() as time');
+        console.log('✅ Database query successful:', result.rows[0]);
         res.json({
+            success: true,
             message: 'Database connected successfully!',
             time: result.rows[0],
             database: process.env.DB_DATABASE
         });
     } catch (error) {
-        console.error('❌ Database connection error:', error);
+        console.error('❌ Database connection error:', {
+            message: error.message,
+            code: error.code,
+            stack: error.stack
+        });
         res.status(500).json({
+            success: false,
             error: 'Database connection failed',
-            details: error.message
+            details: error.message,
+            code: error.code
         });
     }
 });
@@ -143,7 +145,8 @@ app.get('/api/test', (req, res) => {
     res.json({
         message: 'API is working!',
         method: req.method,
-        url: req.url
+        url: req.url,
+        environment: process.env.NODE_ENV
     });
 });
 
@@ -156,25 +159,57 @@ app.use('*', (req, res) => {
     console.log('❌ 404 Not Found:', req.method, req.originalUrl);
     res.status(404).json({
         error: 'Route not found',
-        message: `Cannot ${req.method} ${req.originalUrl}`
+        message: `Cannot ${req.method} ${req.originalUrl}`,
+        availableEndpoints: {
+            root: 'GET /',
+            testDb: 'GET /test-db',
+            testApi: 'GET /api/test',
+            corsTest: 'GET /api/cors-test',
+            register: 'POST /api/auth/register',
+            login: 'POST /api/auth/login',
+            tasks: 'GET /api/tasks (protected)'
+        }
     });
 });
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-    console.error('❌ Error:', err.stack);
+    console.error('❌ Unhandled error:', err.stack);
     res.status(err.status || 500).json({
-        error: err.message || 'Internal server error'
+        error: err.message || 'Internal server error',
+        stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
     });
 });
 
 // ==================== START SERVER ====================
 const PORT = process.env.PORT || 5000;
-app.listen(PORT, () => {
-    console.log(`\n🚀 ==================================`);
-    console.log(`✅ Server is running on port ${PORT}`);
-    console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
-    console.log(`🌍 Frontend URL: ${process.env.FRONTEND_URL || 'Not set'}`);
-    console.log(`🌐 CORS Test at: https://task-manager-api.onrender.com/api/cors-test`);
-    console.log(`=====================================\n`);
+
+// Test database connection on startup
+async function testDatabaseConnection() {
+    try {
+        console.log('🔌 Testing database connection on startup...');
+        const result = await pool.query('SELECT NOW()');
+        console.log('✅ Database connected successfully at:', result.rows[0].now);
+        return true;
+    } catch (error) {
+        console.error('❌ Database connection failed on startup:', {
+            message: error.message,
+            code: error.code
+        });
+        return false;
+    }
+}
+
+// Start server after testing connection
+testDatabaseConnection().then((dbConnected) => {
+    app.listen(PORT, () => {
+        console.log(`\n🚀 ==================================`);
+        console.log(`✅ Server is running on port ${PORT}`);
+        console.log(`📝 Environment: ${process.env.NODE_ENV || 'development'}`);
+        console.log(`💾 Database: ${dbConnected ? '✅ Connected' : '❌ Not Connected'}`);
+        console.log(`🌍 Frontend URL: ${process.env.FRONTEND_URL || 'Not set'}`);
+        console.log(`🌐 CORS Test at: https://task-manager-api.onrender.com/api/cors-test`);
+        console.log(`📊 Test DB at: https://task-manager-api.onrender.com/test-db`);
+        console.log(`=====================================\n`);
+    });
 });
