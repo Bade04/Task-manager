@@ -1,17 +1,16 @@
 const { Pool } = require('pg');
 require('dotenv').config();
 
-// Prefer DATABASE_URL (Render provides this; add sslmode for external connections)
+// Prefer DATABASE_URL (Render provides this)
 let poolConfig;
 
 if (process.env.DATABASE_URL) {
-    let url = process.env.DATABASE_URL;
-    if (!url.includes('sslmode=')) {
-        url += url.includes('?') ? '&sslmode=require' : '?sslmode=require';
-    }
+    const url = process.env.DATABASE_URL;
     poolConfig = {
         connectionString: url,
-        ssl: { rejectUnauthorized: false },
+        ssl: {
+            rejectUnauthorized: false,  // Required for Render's self-signed cert
+        },
         connectionTimeoutMillis: 10000,
         idleTimeoutMillis: 30000,
         max: 10,
